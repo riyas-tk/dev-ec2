@@ -1,0 +1,63 @@
+name: backend-bootstrap
+
+permissions:
+  id-token: write
+
+on:
+  workflow_dispatch:
+  
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/bootstrap.yaml
+      - ./terraform/tictactoe-dev/bootstrap/**
+      - ./terraform/modules/bootstrap/**
+
+# Need ID token write permission to use OIDC
+env:
+  TF_CONFIG_PATH: terraform/tictactoe-dev/bootstrap
+
+jobs:
+  run_job_with_aws:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@main # Or a specific version
+        with:
+          role-to-assume: arn:aws:iam::953909302469:role/GhaAssumeRoleWithAction
+          aws-region: us-east-1
+
+      - name: Additional steps
+        run: |
+          # Your commands that require AWS credentials
+          aws sts get-caller-identity 
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          # Optional: specify a particular Terraform version
+          terraform_version: 1.14.3
+
+      - name: terraform init
+        run: | 
+          cd "${{ env.TF_CONFIG_PATH }}"
+          terraform init
+
+      - name: terraform validate
+        run: | 
+          cd "${{ env.TF_CONFIG_PATH }}"
+          terraform validate
+
+      - name: terraform plan
+        run: | 
+          cd "${{ env.TF_CONFIG_PATH }}"
+          terraform plan
+
+      - name: terraform apply
+        run: | 
+          cd "${{ env.TF_CONFIG_PATH }}"
+          terraform apply --auto-approve
