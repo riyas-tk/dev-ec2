@@ -7,6 +7,15 @@ permissions:
 on:
   workflow_dispatch:
     inputs:
+      action:
+        description: 'whether to create or destroy'
+        type: choice
+        required: true
+        default: 'create'
+        options:
+          - create
+          - destroy
+
       valid_until_hrs:
         description: 'spot request valid till hours'
         required: false
@@ -49,8 +58,18 @@ jobs:
           cd "${{ env.TF_CONFIG_PATH }}"
           terraform validate
 
+
       - name: terraform apply
+        if: 
         run: |
           cd "${{ env.TF_CONFIG_PATH }}"
-          terraform apply \
-          -var="valid_until_hrs=${{inputs.valid_until_hrs}}" --auto-approve
+          if [ ${{inputs.action}} == "create" ]; then
+            terraform apply \
+            -var="valid_until_hrs=${{inputs.valid_until_hrs}}" \
+            --auto-approve
+          else
+            terraform destroy \
+            --auto-approve
+          fi
+
+        
