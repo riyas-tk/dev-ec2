@@ -11,12 +11,12 @@ on:
       - main
     paths:
       - .github/workflows/bootstrap.yaml
-      - ./terraform/tictactoe-dev/bootstrap/**
+      - ./terraform/dev/bootstrap/**
       - ./terraform/modules/bootstrap/**
 
 # Need ID token write permission to use OIDC
 env:
-  TF_CONFIG_PATH: terraform/tictactoe-dev/bootstrap
+  TF_CONFIG_PATH: terraform/dev/bootstrap
 
 jobs:
   run_job_with_aws:
