@@ -8,13 +8,26 @@ variable "availability_zone" {
   default = "us-east-1a"
 }
 
+variable "instance_name" {
+  type = string
+}
+
 variable "instance_type" {
+  type = string
+}
+
+variable "instance_role" {
   type = string
 }
 
 variable "spot_type" {
   type    = string
   default = "one-time"
+}
+
+variable "userdata_base64" {
+  type = string
+  default = ""
 }
 
 variable "persistent_spot_settings" {
@@ -34,23 +47,21 @@ variable "subnet_id" {
   type = string
 }
 
-variable "ec2_ig" {
-  type = string
+variable "sg_id" {
+  description = "Security group name"
+  type        = string
 }
 
-variable "sg_id" {
-  description = "Security group ID"
-  type        = list(string)
+variable "ssh_key" {
+  type = string
 }
 
 variable "valid_until_hrs" {
   type    = string
-  default = "2h" # Use 2 hr validity for spot request 
+  default = "2h" # Use 2 hr validity for spot request
 }
 
 variable "tags" {
-  type = map(string)
-  default = {
-    "ManagedBy" : "Terraform"
-  }
+  type    = map(string)
+  default = {}
 }

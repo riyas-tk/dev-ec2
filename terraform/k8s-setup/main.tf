@@ -1,0 +1,41 @@
+module "vpc_infra" {
+  source = "../modules/vpc"
+  azs    = local.azs
+}
+
+module "asg" {
+  source        = "../modules/asg"
+  ami_id        = local.images.rhel9
+  min_instances = 2
+  max_instances = 3
+  subnet_ids    = module.vpc_infra.priv_subnet_ids
+  # target_group_arns = [
+  #  module.vpc_infra.target_grp_arn
+  # ]
+  security_group_ids = [
+    module.vpc_infra.private_sg_id
+  ]
+  instance_profile = aws_iam_instance_profile.ec2_instance_profile.name
+  key_name         = aws_key_pair.ssh_key.id
+  userdata_base64  = local.app_userdata_base64
+  node_name_tag    = "node_control_plane"
+}
+
+
+module "bastion" {
+  source            = "../modules/ec2"
+  instance_name     = "bastion-box"
+  region            = local.region
+  availability_zone = local.azs[0]
+
+  ami_id          = local.ami_id
+  instance_type   = local.bastion_ec2_type
+  subnet_id       = module.vpc_infra.public_subnet_ids[0]
+  sg_id           = module.vpc_infra.public_sg_id
+  userdata_base64 = try(local.bastion_userdata_base64, "")
+  ssh_key         = aws_key_pair.ssh_key.id
+  valid_until_hrs = local.valid_until_hrs
+  depends_on = [aws_key_pair.ssh_key
+  ]
+  instance_role = "troubleshoot"
+}
